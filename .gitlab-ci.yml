@@ -31,7 +31,15 @@ test:
     - flutter pub global activate junitreport
     - export PATH="$PATH:$HOME/.pub-cache/bin"
   script:
-    - flutter test --machine --coverage | tojunit -o report.xml
+    - echo "Running tests with verbose output for debugging..."
+    # We run 'flutter test' directly to see the full error output.
+    # The '--machine' flag is removed for human-readable output.
+    - flutter test --coverage
+    
+    # The original command is temporarily disabled to expose test errors.
+    # - flutter test --machine --coverage | tojunit -o report.xml
+
+    - echo "Generating coverage report..."
     - lcov --summary coverage/lcov.info
     - genhtml coverage/lcov.info --output=coverage
   coverage: '/lines\.*: \d+\.\d+\%/'
