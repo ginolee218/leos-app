@@ -69,27 +69,20 @@ build_android_apk:
 # ========================================================================================
 deploy_to_gitlab_release:
   stage: deploy
-#  rules:
-#    - if: $CI_COMMIT_TAG
-  script:
-    - echo "Deploying to GitLab Releases..."
+  rules:
+    - if: $CI_COMMIT_TAG
   before_script:
     - echo "Installing release-cli..."
     - curl --silent --location "https://gitlab.com/gitlab-org/release-cli/-/releases/v0.16.0/downloads/bin/release-cli-linux-amd64" --output /usr/local/bin/release-cli
     - chmod +x /usr/local/bin/release-cli
-    # release-cli 是 GitLab 提供的工具，用來建立 Release
-    # 這裡使用簡化的 release 語法，通常更推薦
+  script:
+    - echo "Deploying to GitLab Releases..."
   dependencies:
     - build_android_apk
   release:
-    # 為觸發此 pipeline 的 Git Tag 建立一個 Release
-    # tag_name: '$CI_COMMIT_TAG'
-    # name: 'Release $CI_COMMIT_TAG'
-    # description: 'Release for tag $CI_COMMIT_TAG created via GitLab CI pipeline.'
-    tag_name: 'release-$(date +%Y%m%d-%H%M%S)'
-    name: 'Release $(date +%Y%m%d-%H%M%S)'
-    description: 'Release created via GitLab CI pipeline.'
-    # 將 build_android_apk 產出的 APK 作為附件 (asset) 加入到這個 Release 中
+    tag_name: '$CI_COMMIT_TAG'
+    name: 'Release $CI_COMMIT_TAG'
+    description: 'Release for tag $CI_COMMIT_TAG created via GitLab CI pipeline.'
     assets:
       links:
         - name: 'app-release.apk'
