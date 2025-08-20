@@ -3,7 +3,7 @@
 # ========================================================================================
 
 # 使用一個固定的 Flutter 版本映像，確保所有工作的環境一致
-image: "ghcr.io/cirruslabs/flutter:3.10.3"
+image: "ghcr.io/cirruslabs/flutter:latest"
 
 # 明確定義 Pipeline 的所有階段
 stages:
