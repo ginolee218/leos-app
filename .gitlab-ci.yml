@@ -1,27 +1,32 @@
-# This file is a template, and might need editing before it works on your project.
-# You can copy and paste this template into a new `.gitlab-ci.yml` file.
-# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
-#
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/development/cicd/templates/
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Flutter.gitlab-ci.yml
+# ========================================================================================
+# GitLab CI/CD Pipeline for Flutter Projects (Integrated Version)
+# ========================================================================================
 
+# 使用一個固定的 Flutter 版本映像，確保所有工作的環境一致
+image: "ghcr.io/cirruslabs/flutter:3.10.3"
+
+# 明確定義 Pipeline 的所有階段
+stages:
+  - test
+  - build
+  - deploy
+
+# ========================================================================================
+# Stage: Test (來自您的版本)
+# ========================================================================================
 code_quality:
   stage: test
-  image: "ghcr.io/cirruslabs/flutter:3.10.3"
   before_script:
     - flutter pub global activate dart_code_metrics
     - export PATH="$PATH:$HOME/.pub-cache/bin"
   script:
-    - metrics lib -r codeclimate  > gl-code-quality-report.json
+    - metrics lib -r codeclimate > gl-code-quality-report.json
   artifacts:
     reports:
       codequality: gl-code-quality-report.json
 
 test:
   stage: test
-  image: "ghcr.io/cirruslabs/flutter:3.10.3"
   before_script:
     - flutter pub global activate junitreport
     - export PATH="$PATH:$HOME/.pub-cache/bin"
@@ -37,7 +42,38 @@ test:
     reports:
       junit: report.xml
 
-deploy:
+# ========================================================================================
+# Stage: Build (來自我的建議)
+# ========================================================================================
+build_android_apk:
+  stage: build
+  script:
+    - echo "Building Android APK..."
+    - flutter pub get
+    - flutter build apk --release
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-release.apk
+    expire_in: 1 week
+
+# ========================================================================================
+# Stage: Deploy (來自我的建議，取代了原本的空範本)
+# ========================================================================================
+deploy_to_gitlab_release:
   stage: deploy
-  script: echo "Define your deployment script!"
-  environment: production
+  script:
+    - echo "Deploying to GitLab Releases..."
+    # release-cli 是 GitLab 提供的工具，用來建立 Release
+    # 這裡使用簡化的 release 語法，通常更推薦
+  dependencies:
+    - build_android_apk
+  release:
+    # 使用日期時間作為版本標籤 (tag)，確保唯一性
+    tag_name: 'release-$(date +%Y%m%d-%H%M%S)'
+    name: 'Release $(date +%Y%m%d-%H%M%S)'
+    description: 'Release created via GitLab CI pipeline.'
+    # 將 build_android_apk 產出的 APK 作為附件 (asset) 加入到這個 Release 中
+    assets:
+      links:
+        - name: 'app-release.apk'
+          url: '${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/raw/build/app/outputs/flutter-apk/app-release.apk'
