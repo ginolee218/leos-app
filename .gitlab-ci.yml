@@ -22,6 +22,7 @@ code_quality:
   script:
     - metrics lib -r codeclimate > gl-code-quality-report.json
   artifacts:
+    expire_in: '1 week'
     reports:
       codequality: gl-code-quality-report.json
 
@@ -39,6 +40,7 @@ test:
     name: coverage
     paths:
       - $CI_PROJECT_DIR/coverage
+    expire_in: '1 week'
     reports:
       junit: report.xml
 
@@ -54,7 +56,7 @@ build_android_apk:
   artifacts:
     paths:
       - build/app/outputs/flutter-apk/app-release.apk
-    expire_in: 'never'
+    expire_in: '1 week'
 
 # ========================================================================================
 # Stage: Deploy (來自我的建議，取代了原本的空範本)
